@@ -1,0 +1,619 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>차시 계단</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
+<style>
+/* 홈 화면(마스코트·규칙 카드·캐릭터 선택) → 게임 화면(HUD, 계단 패널, 문제 카드, 큰 답 버튼). 층 구간마다 색이 바뀐다. */
+:root{
+  --night:#0a1f3d; --ice:#bfeaf5; --snow:#f6fbff; --ink:#0e2338; --coral:#ff6f59; --gold:#ffcf5c; --glow:#5ce8c9;
+  --bg1:#6fc6ef; --bg2:#9fd9a0; --bg3:#4f8f4a;
+  --p1:#eafbe3; --p2:#cdeec0; --v1:#e3f8d8; --v2:#bfe6ad; --step:#ffffffd8; --stepline:#8fcf7c; --steptxt:#3f7a2e; --head-ink:#356b26;
+  --jua:'Jua','Gowun Dodum',sans-serif; --body:'Gowun Dodum',system-ui,sans-serif;
+  color-scheme:dark;
+}
+body[data-z="0"]{}
+body[data-z="1"]{--bg1:#4a9fe0;--bg2:#8fd0f0;--bg3:#dff2ff;--p1:#eaf6ff;--p2:#c9e6fb;--v1:#eef8ff;--v2:#bfe1f7;--stepline:#7fc0ea;--steptxt:#2f6f95;--head-ink:#2a628a}
+body[data-z="2"]{--bg1:#05040f;--bg2:#1a1040;--bg3:#3a1f66;--p1:#241a42;--p2:#150f2c;--v1:#2c2050;--v2:#160f30;--step:#3a2c66d8;--stepline:#8f6fd6;--steptxt:#e4d9ff;--head-ink:#d8caff}
+body[data-z="4"]{--bg1:#000;--bg2:#000;--bg3:#000;--p1:#161616;--p2:#050505;--v1:#1a1a1a;--v2:#000;--step:#2a2a2ad8;--stepline:#555;--steptxt:#cfcfcf;--head-ink:#d8d8d8}
+body[data-z="3"]{--bg1:#2a0605;--bg2:#6e120c;--bg3:#b23a12;--p1:#4a140d;--p2:#2c0906;--v1:#57170e;--v2:#2a0805;--step:#6e2318d8;--stepline:#ff7a45;--steptxt:#ffd9c2;--head-ink:#ffcbab}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:var(--body);color:var(--ink);min-height:100vh;background:linear-gradient(180deg,var(--bg1) 0%,var(--bg2) 50%,var(--bg3) 100%);transition:background .9s}
+body.home{background:radial-gradient(ellipse at 50% -10%,#2a86c9 0%,transparent 55%),linear-gradient(180deg,#0a1f3d 0%,#123a63 45%,#1f6fa3 100%)}
+[hidden]{display:none!important}
+button{font-family:inherit}
+button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.app{width:100%;max-width:460px;margin:0 auto;padding:14px 16px 28px;position:relative;z-index:1}
+#decor{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.dc{position:absolute;font-size:28px;opacity:.5;animation:bobd 3.2s ease-in-out infinite}
+@keyframes bobd{50%{transform:translateY(-6px)}}
+/* HOME */
+#home{display:flex;flex-direction:column;align-items:center;text-align:center;padding-top:8px}
+.brand{color:var(--ice);font-size:13px;letter-spacing:.14em;opacity:.85;margin-bottom:4px}
+h1{font-family:var(--jua);font-weight:400;color:var(--snow);font-size:32px;margin:0 0 6px;text-shadow:0 2px 0 rgba(0,0,0,.25)}
+.subtitle{color:var(--ice);font-size:14px;line-height:1.55;margin-bottom:10px}
+.stage{font-size:96px;line-height:1;height:140px;display:flex;align-items:center;filter:drop-shadow(0 10px 12px rgba(0,0,0,.35));animation:bob 3s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-8px) rotate(2deg)}}
+.lbl{color:var(--ice);font-size:13px;align-self:flex-start;margin:6px 0 8px}
+.row{display:flex;gap:8px;width:100%;margin-bottom:12px}
+.cb{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;border-radius:14px;border:2px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:var(--snow);font:13px var(--jua);cursor:pointer}
+.cb .e{font-size:28px;line-height:1}
+.cb[aria-pressed="true"]{background:linear-gradient(135deg,rgba(92,232,201,.25),rgba(31,111,163,.3));border-color:var(--glow);box-shadow:0 4px 10px rgba(92,232,201,.3);transform:translateY(-1px)}
+.rules{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:18px;padding:16px 18px;color:var(--snow);font-size:14px;line-height:1.7;text-align:left;width:100%;margin:2px 0 14px}
+.rules b{color:var(--gold)}
+.start{width:100%;padding:17px 0;border-radius:16px;border:0;background:linear-gradient(135deg,#ff9a6b,var(--coral));color:#fff;font:18px var(--jua);letter-spacing:.04em;cursor:pointer;box-shadow:0 8px 18px rgba(255,111,89,.4)}
+.start:active{transform:translateY(1px)}
+.credit{color:rgba(255,255,255,.45);font-size:11px;margin-top:18px}
+/* GAME */
+#game{display:flex;flex-direction:column;gap:12px}
+.hud{background:rgba(255,255,255,.92);border-radius:16px;padding:9px 12px;display:flex;align-items:center;gap:8px;box-shadow:0 6px 16px rgba(0,0,0,.15)}
+.ib{width:34px;height:34px;border-radius:10px;border:0;background:var(--snow);display:flex;align-items:center;justify-content:center;cursor:pointer;color:#123a63;flex:0 0 auto}
+.ht{font:13px var(--jua);color:#123a63;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hearts{display:flex;gap:2px}
+.heart{width:17px;height:17px}
+.badge{background:var(--snow);border-radius:10px;padding:4px 10px;text-align:center;line-height:1.1}
+.badge .l{font-size:9px;color:#7c93a8;display:block}
+.badge .v{font:13px var(--jua);color:var(--ink);font-variant-numeric:tabular-nums}
+.sw{background:linear-gradient(180deg,var(--p1),var(--p2));border-radius:18px;padding:10px 10px 8px;box-shadow:0 6px 16px rgba(0,0,0,.15);transition:background .5s}
+.zc{display:inline-block;padding:4px 12px;margin-bottom:7px;border-radius:20px;font:11px var(--jua);background:rgba(255,255,255,.8);color:#33475c;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+.sh{display:flex;justify-content:space-between;align-items:baseline;padding:0 4px 8px;color:var(--head-ink);transition:color .5s}
+.sh .cur{font:14px var(--jua)}.sh .cur b{color:var(--coral);font-size:18px;font-variant-numeric:tabular-nums}
+.sh .goal{font-size:11px}
+.vp{position:relative;height:320px;overflow:hidden;border-radius:12px;background:linear-gradient(180deg,var(--v1),var(--v2));transition:background .5s}
+.vp::before,.vp::after{content:'';position:absolute;left:0;right:0;height:22px;z-index:4;pointer-events:none}
+.vp::before{top:0;background:linear-gradient(180deg,var(--v1),transparent)}
+.vp::after{bottom:0;background:linear-gradient(0deg,var(--v2),transparent)}
+.inner{position:absolute;left:0;right:0;top:0;transition:transform .24s cubic-bezier(.2,.9,.32,1.32)}
+.step{position:absolute;width:34%;height:30px;border-radius:8px;background:var(--step);border:2px solid var(--stepline);display:flex;align-items:center;justify-content:center;font:12px var(--jua);color:var(--steptxt);box-shadow:0 3px 0 rgba(0,0,0,.18);transition:background .3s,border-color .3s}
+.step.passed{opacity:.8}
+.step.on{background:linear-gradient(135deg,#fff6d8,#ffe9a8);border-color:var(--gold);color:#8a6a15;box-shadow:0 0 0 3px rgba(255,207,92,.35)}
+.step.gate{background:linear-gradient(135deg,#ffd0cc,#ff8a7a);border-color:#e6301f;color:#7a1000;animation:gp 1.4s ease-in-out infinite}
+@keyframes gp{50%{box-shadow:0 0 0 5px rgba(230,48,31,.2)}}
+.me{position:absolute;font-size:50px;line-height:1;transform:translateX(-50%);transition:left .24s cubic-bezier(.2,.9,.32,1.32);z-index:5;filter:drop-shadow(0 3px 3px rgba(0,0,0,.3))}
+.vp.impact{animation:vshake .18s}
+@keyframes vshake{0%{transform:translate(0,0)}25%{transform:translate(-3px,2px)}50%{transform:translate(3px,-2px)}75%{transform:translate(-2px,1px)}100%{transform:translate(0,0)}}
+.me.hop{animation:hop .32s}.me.shake{animation:shake .4s}.me.fall{animation:fall 1s forwards}
+@keyframes hop{28%,55%{transform:translate(-50%,-20px) scale(.9,1.12)}78%{transform:translate(-50%,3px) scale(1.15,.85)}}
+@keyframes shake{25%{transform:translate(-58%,0) rotate(-8deg)}75%{transform:translate(-42%,0) rotate(8deg)}}
+@keyframes fall{to{transform:translate(-50%,200px) rotate(420deg);opacity:0}}
+.qcard{background:#fff;border-radius:18px;padding:18px;box-shadow:0 8px 20px rgba(0,0,0,.18);min-height:130px;display:flex;flex-direction:column}
+.qtop{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.pill{padding:5px 11px;border-radius:20px;font:bold 11px var(--body);color:#fff;background:#4fb0d6}
+.pill.k{background:#c2685a}
+.combo{font:bold 12px var(--body);color:var(--coral);opacity:0;transition:opacity .2s}
+.combo.show{opacity:1}
+.qtext{font-size:20px;line-height:1.5;text-align:center;flex:1;display:flex;align-items:center;justify-content:center;word-break:keep-all;padding:2px}
+.answers{display:flex;gap:12px}
+.ans{flex:1;padding:18px 0 14px;border-radius:16px;border:0;cursor:pointer;color:#fff;text-align:center;box-shadow:0 6px 14px rgba(0,0,0,.2)}
+.ans:active{transform:translateY(2px)}
+.ans:disabled{opacity:.6}
+.ans.o{background:linear-gradient(135deg,#4fb0d6,#1f6fa3)}
+.ans.x{background:linear-gradient(135deg,#ff9a6b,#ff6f59)}
+.ans.pick{background:linear-gradient(135deg,#a985e6,#7c4fc2);padding:14px 6px;font:15px/1.3 var(--jua)}
+.answers.pg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pill.pk{background:#a15fd6}
+.ans .key{display:block;font-size:11px;opacity:.85;margin-bottom:4px}
+.ans .big{font:24px var(--jua)}
+.ans .sub{display:block;font-size:12px;opacity:.9}
+.foot{text-align:center;color:rgba(255,255,255,.8);font-size:12px}
+/* overlays */
+.ov{position:fixed;inset:0;background:rgba(6,16,30,.62);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px}
+.modal{background:#fff;border-radius:20px;padding:24px 22px;max-width:380px;width:100%;max-height:90vh;overflow:auto;box-shadow:0 20px 40px rgba(0,0,0,.35);text-align:center}
+.modal h2{font:19px var(--jua);margin:6px 0 10px}
+.modal .em{font-size:44px}
+.quote{background:#f3f8fb;border-radius:12px;padding:12px 14px;font-size:14px;margin:10px 0;text-align:left;line-height:1.55}
+.quote div{margin-top:6px}.quote .ok{color:#1f8f6b}.quote .no{color:var(--coral)}
+.why{font-size:13px;color:#4c6478;text-align:left;line-height:1.6;margin-bottom:16px}
+.mb{width:100%;padding:14px 0;border-radius:14px;border:0;background:linear-gradient(135deg,#4fb0d6,#1f6fa3);color:#fff;font:15px var(--jua);cursor:pointer}
+.mb.alt{background:#eef3f6;color:var(--ink)}.mb.coral{background:linear-gradient(135deg,#ff9a6b,#ff6f59)}
+.brow{display:flex;gap:10px}
+.sg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0 16px}
+.sb{background:#f3f8fb;border-radius:12px;padding:10px 6px}
+.sb .l{font-size:11px;color:#7c93a8}.sb .v{font:18px var(--jua);color:var(--ink)}
+.rev{background:#f3f8fb;border-radius:12px;padding:10px 14px;text-align:left;font-size:12.5px;line-height:1.6;margin-bottom:16px;color:var(--ink)}
+.rev ul{margin:6px 0 0;padding-left:18px}
+.toast{position:fixed;top:64px;left:50%;transform:translateX(-50%) translateY(-8px);background:linear-gradient(135deg,#ff6f9e,#ff9fc2);color:#fff;font:12.5px var(--jua);padding:8px 16px;border-radius:20px;z-index:60;pointer-events:none;opacity:0;transition:.25s}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.cimg{display:block;height:1em;width:auto;max-width:none;object-fit:contain}
+.stage .cimg{height:120px}
+.cb .e .cimg{height:30px}
+.me{height:58px;display:flex;align-items:flex-end;justify-content:center}
+.me .cimg{height:58px}
+/* 콤보 불꽃: 캐릭터 둘레에 불꽃 6개, 10/20/30/40콤보마다 색이 바뀐다 */
+.fire{position:absolute;left:50%;top:50%;width:1px;height:1px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:-1}
+.fire.on{opacity:1}
+.fire i{position:absolute;left:0;top:0;width:15px;height:21px;margin:-10px 0 0 -7px;border-radius:50% 50% 50% 50%/62% 62% 38% 38%;animation:fl .55s ease-in-out infinite alternate}
+.fire{scale:1.25}
+.fire i:nth-child(1){transform:rotate(0deg) translateY(-26px)}
+.fire i:nth-child(2){transform:rotate(60deg) translateY(-26px);animation-delay:.1s}
+.fire i:nth-child(3){transform:rotate(120deg) translateY(-26px);animation-delay:.05s}
+.fire i:nth-child(4){transform:rotate(180deg) translateY(-26px);animation-delay:.18s}
+.fire i:nth-child(5){transform:rotate(240deg) translateY(-26px);animation-delay:.08s}
+.fire i:nth-child(6){transform:rotate(300deg) translateY(-26px);animation-delay:.14s}
+@keyframes fl{from{opacity:.7;filter:brightness(1)}to{opacity:1;filter:brightness(1.3)}}
+.fire.f1 i{background:linear-gradient(180deg,#fff3b0,#ffb200);box-shadow:0 0 8px 2px rgba(255,178,0,.75)}
+.fire.f2 i{background:linear-gradient(180deg,#ffcf8a,#e6301f);box-shadow:0 0 9px 3px rgba(230,48,31,.8)}
+.fire.f3 i{background:linear-gradient(180deg,#bfe8ff,#1f6fe0);box-shadow:0 0 10px 3px rgba(31,111,224,.85)}
+.fire.f4 i{background:linear-gradient(180deg,#a75cff,#0c0316);box-shadow:0 0 12px 4px rgba(80,10,120,.9)}
+/* 메달 */
+.medal{position:relative;width:96px;height:96px;margin:4px auto 6px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;border:4px solid rgba(255,255,255,.75);isolation:isolate}
+.medal.none{background:#e6edf2;color:#9fb1c0;border-color:#d3dde5;font-size:34px}
+.medal.m1{background:radial-gradient(circle at 35% 28%,#f6c595,#c0733a 58%,#7a3f14);box-shadow:0 6px 14px rgba(122,63,20,.45)}
+.medal.m2{background:radial-gradient(circle at 35% 28%,#fff,#cfd7de 55%,#7d8894);box-shadow:0 6px 14px rgba(90,100,110,.45)}
+.medal.m3{background:radial-gradient(circle at 35% 28%,#fff6b8,#f5c242 55%,#b8860b);box-shadow:0 6px 18px rgba(184,134,11,.55)}
+.medal.m4{background:radial-gradient(circle at 35% 28%,#fff,#9be7ff 42%,#3aa8e8 75%,#2b6cd6);box-shadow:0 0 18px 4px rgba(90,200,255,.65);animation:glint 1.8s ease-in-out infinite}
+.medal.m5{background:radial-gradient(circle at 35% 28%,#fff,#fff3a8 35%,#ff9ad5 70%,#8f6bff);box-shadow:0 0 26px 8px rgba(255,200,80,.85),0 0 50px 14px rgba(255,120,220,.55);animation:glint 1.2s ease-in-out infinite;border-color:#fff}
+.medal .ring{position:absolute;inset:-12px;border-radius:50%;z-index:-1;background:conic-gradient(from 0deg,#ff5f6d,#ffc371,#fff75e,#5effa0,#5ec8ff,#b45eff,#ff5f6d);animation:spin 2.4s linear infinite;filter:blur(1px)}
+.medal .sp{position:absolute;font-size:18px;animation:twk 1.1s ease-in-out infinite}
+.medal .sp.a{top:-14px;right:-8px}.medal .sp.b{bottom:-10px;left:-12px;animation-delay:.4s}.medal .sp.c{top:2px;left:-18px;animation-delay:.75s;font-size:14px}
+.medal .ico{filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes glint{50%{filter:brightness(1.25) saturate(1.2)}}
+@keyframes twk{0%,100%{transform:scale(.4) rotate(0);opacity:.3}50%{transform:scale(1.2) rotate(30deg);opacity:1}}
+.mname{font:18px var(--jua);margin:2px 0 2px}
+.mhint{font-size:12.5px;color:#7c93a8;margin-bottom:6px}
+body.flapmode{transition:none}
+body.flapmode .dc{animation:none}
+#decor:empty{display:none}
+/* 기둥 날기 */
+#fgame,#game{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+.cwrap,.cwrap *{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;outline:none}
+#fgame{display:flex;flex-direction:column;gap:12px}
+.cwrap{position:relative;width:100%;max-width:360px;margin:0 auto;border-radius:18px;overflow:hidden;box-shadow:0 8px 20px rgba(0,0,0,.25);background:linear-gradient(180deg,var(--v1),var(--v2))}
+.cwrap canvas{display:block;width:100%;height:auto;touch-action:manipulation;cursor:pointer}
+.cwrap.hit{animation:vshake .25s}
+.fready{position:absolute;left:0;right:0;top:36%;text-align:center;font:20px var(--jua);color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.5);pointer-events:none}
+.fscore{position:absolute;left:0;right:0;top:12px;text-align:center;font:44px var(--jua);color:#fff;-webkit-text-stroke:2px #123a63;paint-order:stroke fill;text-shadow:0 3px 0 rgba(0,0,0,.3);pointer-events:none;font-variant-numeric:tabular-nums}
+.modes .cb{padding:12px 4px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div id="decor"></div>
+<div class="toast" id="toast"></div>
+<div class="app">
+  <section id="home">
+    <div class="brand">STAIR CLIMB CLUB</div>
+    <h1>차시 계단</h1>
+    <div class="subtitle">계단 방향을 맞히며 올라가다가<br>문제가 나오면 참(O) / 거짓(X)으로 풀어 보세요!</div>
+    <div class="stage" id="stage"></div>
+    <div class="lbl">🎮 게임 선택</div>
+    <div class="row modes" id="modes">
+      <button class="cb" type="button" data-v="stairs" aria-pressed="true"><span class="e">🪜</span>계단 오르기</button>
+      <button class="cb" type="button" data-v="flap" aria-pressed="false"><span class="e">🏛️</span>기둥 날기</button>
+    </div>
+    <div class="lbl">🐾 캐릭터 선택</div>
+    <div class="row" id="chars"></div>
+    <div class="rules">
+      🎯 <b>목표</b> : 하트를 지키며 끝없이 높이 올라가기<br>
+      🪜 <b>이동</b> : 계단이 꺾이는 방향을 보고 ←/→ 키(또는 화면 버튼)로 한 칸씩 올라가요. 잘못 밟으면 하트가 1개 줄어요!<br>
+      ❓ <b>관문 문제</b> : 7~8층마다 빨간 계단 다음에 O/X 또는 객관식 문제가 나와요<br>
+      ❤️ <b>목숨</b> : 3개 (모두 잃으면 등반 종료)<br>
+      🏛️ <b>기둥 날기</b> : 화면을 누르면 위로 올라가고, 가만히 있으면 내려가요. 기둥 구멍 사이로 지나가면 1점! (문제는 없어요)
+    </div>
+    <button class="start" id="start" type="button">▶ 시작하기</button>
+    <div class="credit">for 중2 과학 · 동물과 에너지</div>
+  </section>
+
+  <section id="fgame" hidden>
+    <div class="hud">
+      <button class="ib" id="fhome" type="button" aria-label="홈으로"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M3 11L12 4l9 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div class="ht">기둥 날기</div>
+      <div class="badge"><span class="l">최고 점수</span><span class="v" id="fbest">0</span></div>
+    </div>
+    <div class="cwrap" id="cwrap"><canvas id="cv" width="360" height="520"></canvas><div class="fscore" id="fscore">0</div><div class="fready" id="fready">화면을 눌러 시작!</div></div>
+    <div class="foot">화면(또는 스페이스바)을 누르면 올라가요</div>
+  </section>
+
+  <section id="game" hidden>
+    <div class="hud">
+      <button class="ib" id="homeb" type="button" aria-label="홈으로"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M3 11L12 4l9 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div class="ht">차시 계단</div>
+      <div class="hearts" id="hearts"></div>
+      <div class="badge"><span class="l">콤보</span><span class="v" id="hc">0</span></div>
+    </div>
+    <div class="sw">
+      <div class="zc" id="zc"></div>
+      <div class="sh"><div class="cur">현재 <b id="fl">1</b> F</div><div class="goal" id="goal">계단을 보고 방향을 맞춰봐요!</div></div>
+      <div class="vp"><div class="inner" id="inner"></div><div class="me" id="me"><div class="fire" id="fire"><i></i><i></i><i></i><i></i><i></i><i></i></div><span id="mch">🐧</span></div></div>
+    </div>
+    <div class="qcard" id="qcard" hidden>
+      <div class="qtop"><span class="pill" id="pill"></span><span class="combo" id="qc"></span></div>
+      <div class="qtext" id="qt"></div>
+    </div>
+    <div class="answers" id="ans"></div>
+    <div class="foot" id="foot"></div>
+  </section>
+</div>
+
+<div class="ov" id="ovfb" hidden><div class="modal">
+  <div class="em">💧</div>
+  <h2 id="fbt"></h2>
+  <div class="quote">문제: "<span id="fbq"></span>"<div>올바른 정답: <b class="ok" id="fbc"></b></div><div>내가 선택한 답: <b class="no" id="fbu"></b></div></div>
+  <div class="why" id="fbw"></div>
+  <button class="mb" id="fbn" type="button"></button>
+</div></div>
+
+<div class="ov" id="ovf" hidden><div class="modal">
+  <h2>게임 오버!</h2>
+  <div id="fmedal"></div>
+  <div class="mname" id="fmn"></div>
+  <div class="mhint" id="fmh"></div>
+  <div class="sg" style="grid-template-columns:1fr 1fr"><div class="sb"><div class="l">점수</div><div class="v" id="fs1">0</div></div><div class="sb"><div class="l">최고 점수</div><div class="v" id="fs2">0</div></div></div>
+  <div class="brow"><button class="mb alt" id="fh2" type="button">홈으로</button><button class="mb coral" id="fr2" type="button">다시 도전</button></div>
+</div></div>
+
+<div class="ov" id="ovres" hidden><div class="modal">
+  <div class="em" id="re">💧</div>
+  <h2 id="rt">도전 종료!</h2>
+  <div class="why" id="rd" style="text-align:center;margin-bottom:0"></div>
+  <div class="sg"><div class="sb"><div class="l">도달 층수</div><div class="v" id="rf">1F</div></div><div class="sb"><div class="l">맞힌 문제</div><div class="v" id="rc">0</div></div><div class="sb"><div class="l">최고 콤보</div><div class="v" id="rb">0</div></div></div>
+  <div class="rev" id="rev"></div>
+  <div class="brow"><button class="mb alt" id="rh" type="button">홈으로</button><button class="mb coral" id="rr" type="button">다시 도전</button></div>
+</div></div>
+
+<script>
+// 문제 데이터: 이 배열만 바꾸면 다른 차시·과목으로 쓸 수 있다. s=과목, c=분류, t=문장, a=정답(true=O), w=해설
+var Q=[
+ {s:'과학',c:'심장',t:'좌심방은 폐정맥을 통해 폐를 지나온 혈액을 받아들인다.',a:true,w:'좌심방은 폐정맥, 우심방은 대정맥으로 혈액을 받아요. 폐에서 오는 혈액은 좌심방으로 들어가요.'},
+ {s:'과학',c:'심장',t:'좌심방은 대정맥을 통해 온몸을 지나온 혈액을 받아들인다.',a:false,w:'온몸을 지나온 혈액은 대정맥을 통해 우심방으로 들어와요. 좌심방은 폐정맥으로 혈액을 받아요.'},
+ {s:'과학',c:'심장',t:'우심실은 폐동맥을 통해 폐로 혈액을 내보낸다.',a:true,w:'우심실은 폐동맥으로 폐에, 좌심실은 대동맥으로 온몸에 혈액을 내보내요.'},
+ {s:'과학',c:'심장',t:'우심실은 대동맥을 통해 온몸으로 혈액을 내보낸다.',a:false,w:'온몸으로 혈액을 내보내는 곳은 좌심실이에요. 우심실은 폐동맥을 통해 폐로 혈액을 내보내요.'},
+ {s:'과학',c:'심장',t:'심방은 혈액을 받아들이고, 심실은 혈액을 내보낸다.',a:true,w:'심방으로 들어온 혈액이 심실을 거쳐 동맥으로 나가요.'},
+ {s:'과학',c:'심장',t:'심장에서 근육이 가장 두꺼운 곳은 우심실이다.',a:false,w:'근육이 가장 두꺼운 곳은 좌심실이에요. 온몸으로 혈액을 보내야 하기 때문이에요.'},
+ {s:'과학',c:'심장',t:'심장의 판막은 혈액이 거꾸로 흐르는 것을 막는다.',a:true,w:'판막 덕분에 심장에서 혈액은 심방 → 심실 → 동맥으로만 흘러요.'},
+ {s:'과학',c:'심장',t:'심장에서 혈액은 심실 → 심방 → 동맥 순으로 흐른다.',a:false,w:'혈액은 심방 → 심실 → 동맥 순으로만 흘러요. 판막이 거꾸로 흐르는 것을 막아요.'},
+ {s:'과학',c:'심장',t:'심장은 수축과 이완을 반복하면서 혈액을 순환시킨다.',a:true,w:'이것이 심장의 기능이에요.'},
+ {s:'과학',c:'혈액 순환',t:'허파순환 경로는 좌심실 → 폐동맥 → 폐의 모세혈관 → 폐정맥 → 우심방이다.',a:false,w:'허파순환은 우심실 → 폐동맥 → 폐의 모세혈관 → 폐정맥 → 좌심방이에요.'},
+ {s:'과학',c:'혈액 순환',t:'온몸순환 경로는 좌심실 → 대동맥 → 온몸의 모세혈관 → 대정맥 → 우심방이다.',a:true,w:'좌심실에서 나가 우심방으로 돌아오는 순환이 온몸순환이에요.'},
+ {s:'과학',c:'혈액 순환',t:'허파순환은 우심실에서 나간 혈액이 폐를 지나 좌심방으로 돌아오는 순환이다.',a:true,w:'폐의 모세혈관에서 이산화 탄소를 내보내고 산소를 받아요.'},
+ {s:'과학',c:'혈액 순환',t:'온몸순환은 우심실에서 나간 혈액이 온몸을 지나 좌심방으로 돌아오는 순환이다.',a:false,w:'온몸순환은 좌심실에서 나가 우심방으로 돌아오는 순환이에요.'},
+ {s:'과학',c:'혈액 순환',t:'폐동맥에는 산소가 적은 정맥혈이 흐른다.',a:true,w:'혈관 이름은 동맥이어도 우심실에서 나온 혈액이라 산소가 적은 정맥혈이에요.'},
+ {s:'과학',c:'혈액 순환',t:'대동맥에는 산소가 많은 동맥혈이 흐른다.',a:true,w:'동맥혈이 흐르는 곳은 폐정맥, 좌심방, 좌심실, 대동맥이에요.'},
+ {s:'과학',c:'혈액 순환',t:'대정맥에는 산소가 많은 동맥혈이 흐른다.',a:false,w:'대정맥에는 온몸에서 돌아오는 산소가 적은 정맥혈이 흘러요. 정맥혈은 대정맥, 우심방, 우심실, 폐동맥에 흘러요.'},
+ {s:'과학',c:'혈액 순환',t:'우심방과 우심실에는 산소가 적은 정맥혈이 흐른다.',a:true,w:'오른쪽 심방과 심실에는 정맥혈, 왼쪽 심방과 심실에는 동맥혈이 흘러요.'},
+ {s:'과학',c:'혈액 순환',t:'좌심방과 좌심실에는 산소가 적은 정맥혈이 흐른다.',a:false,w:'좌심방과 좌심실에는 산소가 많은 동맥혈이 흘러요.'},
+ {s:'과학',c:'영양소',t:'영양소는 몸을 구성하거나 에너지원으로 이용되거나 몸의 기능을 조절하는 물질이다.',a:true,w:'이것이 영양소의 정의예요.'},
+ {s:'과학',c:'영양소',t:'탄수화물은 주로 몸을 구성하는 데 이용된다.',a:false,w:'탄수화물은 주로 에너지원으로 이용되고, 남은 것은 지방으로 바뀌어 저장돼요. 몸을 주로 구성하는 것은 단백질이에요.'},
+ {s:'과학',c:'영양소 검출',t:'녹말에 아이오딘-아이오딘화 칼륨 용액을 떨어뜨리면 청람색으로 변한다.',a:true,w:'녹말은 아이오딘 반응에서 청람색이 나타나요.'},
+ {s:'과학',c:'영양소 검출',t:'포도당 용액에 베네딕트 용액을 넣고 가열하면 보라색이 나타난다.',a:false,w:'포도당은 베네딕트 용액과 가열하면 황적색이 나타나요. 보라색은 단백질 검출 반응이에요.'},
+ {s:'과학',c:'영양소 검출',t:'단백질은 5 % 수산화 나트륨 수용액과 1 % 황산 구리 수용액을 넣으면 보라색이 나타난다.',a:true,w:'단백질 검출 반응(뷰렛 반응)의 색은 보라색이에요.'},
+ {s:'과학',c:'영양소 검출',t:'지방에 수단 Ⅲ 용액을 넣으면 청람색이 나타난다.',a:false,w:'지방은 수단 Ⅲ 용액과 반응하여 선홍색이 나타나요.'},
+ {s:'과학',c:'소화',t:'소화는 큰 영양소를 작은 영양소로 분해하는 과정이다.',a:true,w:'영양소가 세포막을 통과할 수 있을 만큼 작게 분해되어야 흡수돼요.'},
+ {s:'과학',c:'소화',t:'간, 쓸개, 이자는 음식물이 직접 지나가는 소화관에 속한다.',a:false,w:'간, 쓸개, 이자는 소화액을 만들거나 분비하는 소화샘이에요. 음식물이 직접 지나가는 곳은 입, 식도, 위, 작은창자, 큰창자, 항문이에요.'},
+ {s:'과학',c:'소화',t:'침 속의 아밀레이스는 녹말을 엿당으로 분해한다.',a:true,w:'입에서는 침 속 아밀레이스가 녹말을 엿당으로 분해해요.'},
+ {s:'과학',c:'소화',t:'쓸개즙에는 지방을 분해하는 소화효소가 들어 있다.',a:false,w:'쓸개즙에는 소화효소가 없고, 지방의 소화를 돕는 역할을 해요.'},
+ {s:'과학',c:'소화',t:'쓸개즙에는 소화효소가 있어 지방의 소화를 돕는다.',a:false,w:'쓸개즙에는 소화효소가 없어요. 소화효소는 없지만 지방의 소화를 돕는 역할을 해요.'},
+ {s:'과학',c:'소화',t:'이자액에는 녹말, 단백질, 지방을 분해하는 소화효소가 모두 들어 있다.',a:true,w:'이자액에는 아밀레이스, 트립신, 라이페이스가 들어 있어요.'},
+ {s:'과학',c:'소화',t:'지방의 최종 소화 산물은 포도당이다.',a:false,w:'지방의 최종 소화 산물은 지방산과 모노글리세리드예요. 포도당은 녹말의 최종 소화 산물이에요.'},
+ {s:'과학',c:'흡수',t:'작은창자 안쪽 벽에는 주름과 융털이 많아 영양소를 효율적으로 흡수할 수 있다.',a:true,w:'융털 때문에 영양소와 닿는 표면적이 매우 넓어져요.'},
+ {s:'과학',c:'흡수',t:'포도당과 아미노산은 융털의 암죽관으로 흡수된다.',a:false,w:'포도당, 아미노산, 무기염류는 융털의 모세혈관으로 흡수돼요. 암죽관으로는 지방산과 모노글리세리드가 흡수돼요.'},
+ {s:'과학',c:'심장',t:'좌심실은 대동맥을 통해 온몸으로 혈액을 내보내며, 심장에서 근육이 가장 두껍다.',a:true,w:'온몸으로 혈액을 보내야 해서 좌심실의 근육이 가장 두꺼워요.'},
+ {s:'과학',c:'심장',t:'우심방은 폐정맥을 통해 혈액을 받아들인다.',a:false,w:'우심방은 대정맥을 통해 온몸을 지나온 혈액을 받아들여요. 폐정맥은 좌심방으로 연결돼요.'},
+ {s:'과학',c:'혈관',t:'동맥은 혈관벽이 얇고 판막이 있다.',a:false,w:'동맥은 혈관벽이 두껍고 탄력성이 강해요. 판막이 있는 혈관은 정맥이에요.'},
+ {s:'과학',c:'혈관',t:'혈압은 동맥 > 모세혈관 > 정맥 순으로 높다.',a:true,w:'심장에서 멀어질수록 혈압은 낮아져요.'},
+ {s:'과학',c:'혈액',t:'적혈구는 핵이 없고 산소를 운반하는 작용을 한다.',a:true,w:'적혈구는 가운데가 오목한 원반 모양이고 핵이 없어요.'},
+ {s:'과학',c:'혈액',t:'혈구 중 수가 가장 많은 것은 백혈구이다.',a:false,w:'수가 가장 많은 혈구는 적혈구예요. 개수는 적혈구 > 혈소판 > 백혈구 순이에요.'},
+ {s:'과학',c:'혈액',t:'혈소판은 혈액 응고 작용을 한다.',a:true,w:'혈소판은 모양이 일정하지 않고 핵이 없으며 혈액 응고를 도와요.'},
+ {s:'과학',c:'혈액 순환',t:'폐정맥에는 산소가 적은 정맥혈이 흐른다.',a:false,w:'폐정맥에는 폐에서 산소를 받아 온 산소가 많은 동맥혈이 흘러요.'},
+ {s:'과학',c:'호흡운동',t:'들숨이 일어날 때 갈비뼈는 올라가고 가로막은 내려간다.',a:true,w:'그 결과 흉강의 부피가 커지고 압력은 낮아져 공기가 폐로 들어와요.'},
+ {s:'과학',c:'호흡운동',t:'들숨이 일어날 때 흉강의 압력은 높아진다.',a:false,w:'들숨에서는 흉강의 부피가 커져 압력이 낮아져요. 압력이 높아지는 것은 날숨이에요.'},
+ {s:'과학',c:'기체 교환',t:'폐에서 산소는 허파꽈리에서 모세혈관으로 이동한다.',a:true,w:'산소 농도는 허파꽈리 > 모세혈관이라서 산소가 모세혈관으로 이동해요.'},
+ {s:'과학',c:'호흡운동',t:'폐는 근육이 있어 스스로 수축하거나 이완할 수 있다.',a:false,w:'폐는 근육이 없어서 스스로 움직이지 못해요. 갈비뼈와 가로막의 움직임으로 호흡운동이 일어나요.'},
+ {s:'과학',c:'배설',t:'단백질이 분해될 때 생기는 암모니아는 간에서 요소로 바뀐 후 콩팥에서 오줌으로 나간다.',a:true,w:'암모니아는 독성이 강해서 간에서 독성이 약한 요소로 바뀌어요.'},
+ {s:'과학',c:'오줌 생성',t:'포도당과 아미노산은 세뇨관에서 모세혈관으로 일부만 재흡수된다.',a:false,w:'포도당과 아미노산은 전부 재흡수돼요. 물과 무기염류는 대부분 재흡수돼요.'},
+ {s:'과학',c:'배설계',t:'네프론은 토리, 보먼주머니, 세뇨관으로 이루어져 있다.',a:true,w:'네프론은 오줌을 만드는 단위예요.'},
+ {s:'과학',c:'기관계',t:'호흡계는 음식물 속의 영양소를 소화하여 흡수한다.',a:false,w:'영양소를 소화하여 흡수하는 것은 소화계예요. 호흡계는 산소를 받아들이고 이산화 탄소를 내보내요.'}
+];
+var P=[
+ {s:'과학',c:'혈액 순환',t:'동맥혈이 흐르는 곳을 혈액이 흐르는 순서대로 알맞게 나열한 것은?',o:['폐정맥 → 좌심방 → 좌심실 → 대동맥','좌심방 → 폐정맥 → 좌심실 → 대동맥','대동맥 → 좌심실 → 좌심방 → 폐정맥','폐동맥 → 좌심방 → 좌심실 → 대동맥'],a:0,w:'동맥혈이 흐르는 곳은 폐정맥 → 좌심방 → 좌심실 → 대동맥이에요. 폐에서 산소를 받은 혈액이 폐정맥으로 돌아와 좌심방, 좌심실을 거쳐 대동맥으로 나가요.'},
+ {s:'과학',c:'혈액 순환',t:'정맥혈이 흐르는 곳을 혈액이 흐르는 순서대로 알맞게 나열한 것은?',o:['대정맥 → 우심실 → 우심방 → 폐동맥','대정맥 → 우심방 → 우심실 → 폐동맥','폐동맥 → 우심실 → 우심방 → 대정맥','대동맥 → 우심방 → 우심실 → 폐동맥'],a:1,w:'정맥혈이 흐르는 곳은 대정맥 → 우심방 → 우심실 → 폐동맥이에요. 온몸에서 돌아온 혈액이 우심방, 우심실을 거쳐 폐동맥으로 나가요.'},
+ {s:'과학',c:'심장',t:'우심실에서 나간 혈액이 폐를 지난 뒤 돌아오는 곳은?',o:['우심방','좌심방','우심실','좌심실'],a:1,w:'허파순환: 우심실 → 폐동맥 → 폐 → 폐정맥 → 좌심방이에요.'},
+ {s:'과학',c:'심장',t:'온몸으로 혈액을 내보내며 근육이 가장 두꺼운 곳은?',o:['우심방','좌심방','우심실','좌심실'],a:3,w:'좌심실은 대동맥을 통해 온몸으로 혈액을 내보내서 근육이 가장 두꺼워요.'},
+ {s:'과학',c:'심장',t:'대정맥을 통해 온몸을 지나온 혈액을 받아들이는 곳은?',o:['우심방','좌심방','우심실','좌심실'],a:0,w:'온몸을 지나온 혈액은 대정맥을 통해 우심방으로 들어와요.'},
+ {s:'과학',c:'심장',t:'폐동맥을 통해 폐로 혈액을 내보내는 곳은?',o:['우심방','좌심방','우심실','좌심실'],a:2,w:'우심실에서 폐동맥을 통해 폐로 혈액이 나가요.'},
+ {s:'과학',c:'혈액 순환',t:'산소가 많은 동맥혈이 흐르지 않는 곳은?',o:['폐정맥','좌심방','대동맥','폐동맥'],a:3,w:'폐동맥에는 우심실에서 나온 산소가 적은 정맥혈이 흘러요.'},
+ {s:'과학',c:'혈관',t:'혈관벽이 두껍고 탄력성이 강해 높은 혈압을 견디는 혈관은?',o:['동맥','정맥','모세혈관','폐정맥'],a:0,w:'동맥은 심실에서 나온 혈액의 높은 압력을 견딜 수 있어요.'},
+ {s:'과학',c:'혈관',t:'판막이 있는 혈관은?',o:['동맥','정맥','모세혈관','대동맥'],a:1,w:'정맥은 혈관벽이 얇고 탄력성이 약하며 판막이 있어요.'},
+ {s:'과학',c:'심장',t:'혈액이 거꾸로 흐르는 것을 막는 구조는?',o:['판막','심방','심실','모세혈관'],a:0,w:'판막 덕분에 혈액은 심방 → 심실 → 동맥으로만 흘러요.'},
+ {s:'과학',c:'혈액',t:'핵이 없고 산소를 운반하는 혈구는?',o:['적혈구','백혈구','혈소판','혈장'],a:0,w:'적혈구는 가운데가 오목한 원반 모양이고 핵이 없어요.'},
+ {s:'과학',c:'혈액',t:'핵이 있고 식균 작용을 하는 혈구는?',o:['적혈구','백혈구','혈소판','혈장'],a:1,w:'백혈구는 모양이 일정하지 않고 핵이 있으며 식균 작용을 해요.'},
+ {s:'과학',c:'혈액',t:'혈액 응고 작용을 하는 혈구는?',o:['적혈구','백혈구','혈소판','혈장'],a:2,w:'혈소판은 핵이 없고 혈액 응고 작용을 해요.'},
+ {s:'과학',c:'혈관',t:'혈압이 가장 높은 혈관은?',o:['동맥','정맥','모세혈관','판막'],a:0,w:'혈압은 동맥 > 모세혈관 > 정맥 순이에요.'},
+ {s:'과학',c:'영양소 검출',t:'지방을 검출할 때 쓰는 용액은?',o:['수단 Ⅲ 용액','베네딕트 용액','아이오딘 용액','황산 구리 수용액'],a:0,w:'지방은 수단 Ⅲ 용액과 반응하여 선홍색이 나타나요.'},
+ {s:'과학',c:'소화',t:'녹말의 최종 소화 산물은?',o:['포도당','아미노산','지방산','엿당'],a:0,w:'녹말은 엿당을 거쳐 최종적으로 포도당으로 분해돼요.'},
+ {s:'과학',c:'소화',t:'이자액에 들어 있는 단백질 소화효소는?',o:['아밀레이스','트립신','라이페이스','펩신'],a:1,w:'이자액에는 아밀레이스, 트립신, 라이페이스가 들어 있어요. 펩신은 위액 속 효소예요.'},
+ {s:'과학',c:'배설',t:'오줌을 만드는 단위는?',o:['네프론','토리','세뇨관','방광'],a:0,w:'네프론은 토리, 보먼주머니, 세뇨관으로 이루어져 있어요.'},
+ {s:'과학',c:'호흡운동',t:'들숨이 일어날 때 가로막은 어떻게 움직일까?',o:['내려간다','올라간다','좌우로 갈라진다','변화가 없다'],a:0,w:'들숨에서는 갈비뼈가 올라가고 가로막이 내려가요.'}
+];
+var ZONES=[['🌍','지상'],['☁️','하늘'],['🪐','우주'],['🔥','지옥'],['🌑','공허']];
+var CHU='data:image/webp;base64,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';
+var JIN='data:image/webp;base64,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';
+function cv(c){return c.indexOf('data:')===0?'<img src="'+c+'" alt="" class="cimg">':c}
+var CHARS=[[CHU,'추시기','chu'],[JIN,'진로','jin'],['🐸','개구리'],['🐹','햄스터']];
+var DECOR=[['🐑'],['☁️','✈️'],['⭐','🚀'],['🔥'],[]];
+var $=function(i){return document.getElementById(i)};
+var GAP=38, ANCHOR=250;
+var st={}, subj='all', ch=CHU, pool=[], pickPool=[], cur=null, lock=true, phase='climb', lefts=[0], dirNow='right', run=3, gates={}, lastGate=0;
+
+function toast(m){var t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.i);toast.i=setTimeout(function(){t.classList.remove('show')},1400)}
+function heartSVG(on){return '<svg class="heart" viewBox="0 0 24 24" fill="'+(on?'#ff6f59':'#e3e9ee')+'"><path d="M12 21s-7.5-4.7-10-9.3C.6 8.4 2 4.8 5.6 4.1c2-.4 3.9.5 5 2.1a5.9 5.9 0 0 1 5-2.1c3.6.7 5 4.3 3.6 7.6C19.5 16.3 12 21 12 21z"/></svg>'}
+function renderChars(){
+  $('chars').innerHTML=CHARS.map(function(c){return '<button class="cb" type="button" data-v="'+(c[2]||c[0])+'" aria-pressed="'+(c[0]===ch)+'"><span class="e">'+cv(c[0])+'</span>'+c[1]+'</button>'}).join('');
+}
+$('chars').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;var v=b.dataset.v;ch=CHARS.filter(function(c){return (c[2]||c[0])===v})[0][0];$('stage').innerHTML=cv(ch);renderChars()});
+renderChars();$('stage').innerHTML=cv(ch);
+
+function decor(z){
+  var h='',list=DECOR[z];
+  if(!list.length){$('decor').innerHTML='';return}
+  for(var i=0;i<6;i++){h+='<span class="dc" style="top:'+(55+Math.random()*38)+'vh;left:'+(Math.random()*90)+'vw;animation-delay:'+(Math.random()*3).toFixed(1)+'s">'+list[i%list.length]+'</span>'}
+  $('decor').innerHTML=h;
+}
+function refill(){
+  var l=Q.filter(function(q){return subj==='all'||q.s===subj});
+  for(var i=l.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=l[i];l[i]=l[j];l[j]=t}
+  pool=l;
+  var m=P.slice();
+  for(var i=m.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=m[i];m[i]=m[j];m[j]=t}
+  pickPool=m;
+}
+function leftFor(f){
+  while(lefts.length<=f){
+    var prev=lefts.length>1?lefts[lefts.length-1]:4, d=14;
+    var over=dirNow==='right'?prev+d>60:prev-d<4;
+    if(run<=0||over){dirNow=dirNow==='right'?'left':'right';run=2+Math.floor(Math.random()*3)}
+    lefts.push(dirNow==='right'?prev+d:prev-d); run--;
+  }
+  return lefts[f];
+}
+function need(f){return leftFor(f+1)>=leftFor(f)?'right':'left'}
+function ensureGate(m){while(lastGate<m){lastGate+=7+Math.floor(Math.random()*2);gates[lastGate]=1}}
+function zoneOf(f){return Math.min(4,Math.floor((f-1)/50))}
+
+function draw(){
+  var f=st.floor, inner=$('inner'), h='';
+  for(var i=Math.max(1,f-8);i<=f+10;i++){
+    ensureGate(i+1);
+    h+='<div class="step'+(i<f?' passed':'')+(i===f?' on':'')+(gates[i+1]?' gate':'')+'" style="top:'+(-i*GAP)+'px;left:'+leftFor(i)+'%">'+i+'F</div>';
+  }
+  inner.innerHTML=h;
+  inner.style.transform='translateY('+(ANCHOR+f*GAP)+'px)';
+  var me=$('me'); $('mch').innerHTML=cv(ch); me.style.left=(leftFor(f)+17)+'%'; me.style.top=(ANCHOR-56)+'px';
+  $('fl').textContent=f; $('hc').textContent=st.combo;
+  $('hearts').innerHTML=heartSVG(st.hearts>0)+heartSVG(st.hearts>1)+heartSVG(st.hearts>2);
+  var c=st.combo,ft=c>=40?4:c>=30?3:c>=20?2:c>=10?1:0;
+  $('fire').className='fire'+(ft?' on f'+ft:'');
+  var z=zoneOf(f);
+  if(document.body.dataset.z!==String(z)){document.body.dataset.z=z;decor(z)}
+  $('zc').textContent=ZONES[z][0]+' '+ZONES[z][1]+' 구간 ('+(z*50+1)+(z<4?'~'+(z*50+50):'')+'F'+(z<4?'':'~')+')';
+  $('foot').textContent='정답 '+st.right+' · 최고 콤보 '+st.best;
+  $('qc').textContent='🔥 '+st.combo+' 콤보'; $('qc').classList.toggle('show',st.combo>=3);
+}
+function setup(){
+  var t=st.floor+1; ensureGate(t); lock=false;
+  var a=$('ans'); a.className='answers';
+  if(gates[t]&&Math.random()<0.4){
+    phase='pick'; if(!pickPool.length)refill();
+    var q=pickPool.pop(); cur=q;
+    var opts=q.o.map(function(x,i){return {x:x,ok:i===q.a}});
+    for(var i=opts.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tt=opts[i];opts[i]=opts[j];opts[j]=tt}
+    cur.opts=opts;
+    $('qcard').hidden=false;
+    $('pill').textContent='객관식 · '+q.c; $('pill').className='pill pk';
+    $('qt').textContent=q.t;
+    $('goal').textContent='문제 층이에요! 알맞은 답을 골라요!';
+    a.className='answers pg';
+    a.innerHTML=opts.map(function(o,i){return '<button class="ans pick" type="button" data-i="'+i+'">'+o.x+'</button>'}).join('');
+    a.querySelectorAll('button').forEach(function(b){b.onclick=function(){answerPick(Number(b.dataset.i))}});
+  }else if(gates[t]){
+    phase='quiz'; if(!pool.length)refill(); cur=pool.pop();
+    $('qcard').hidden=false;
+    $('pill').textContent=cur.s+' · '+cur.c; $('pill').className='pill'+('');
+    $('qt').textContent=cur.t;
+    $('goal').textContent='문제 층이에요! 참일까요, 거짓일까요?';
+    a.innerHTML='<button class="ans o" id="bo" type="button"><span class="key">← 왼쪽</span><span class="big">O</span><span class="sub">참이다</span></button><button class="ans x" id="bx" type="button"><span class="key">오른쪽 →</span><span class="big">X</span><span class="sub">거짓이다</span></button>';
+    $('bo').onclick=function(){answer(true)}; $('bx').onclick=function(){answer(false)};
+  }else{
+    phase='climb'; $('qcard').hidden=true;
+    $('goal').textContent='계단을 보고 방향을 맞춰봐요!';
+    a.innerHTML='<button class="ans o" id="bl" type="button"><span class="key">← 왼쪽 화살표</span><span class="big">⬅️</span><span class="sub">왼쪽으로 이동</span></button><button class="ans x" id="br" type="button"><span class="key">오른쪽 화살표 →</span><span class="big">➡️</span><span class="sub">오른쪽으로 이동</span></button>';
+    $('bl').onclick=function(){climb('left')}; $('br').onclick=function(){climb('right')};
+  }
+}
+function anim(c){var m=$('me');m.classList.remove('hop','shake');void m.offsetWidth;m.classList.add(c)}
+function hit(){st.combo=0;st.hearts--;draw();anim('shake')}
+function shakeView(){var v=document.querySelector('.vp');v.classList.remove('impact');void v.offsetWidth;v.classList.add('impact')}
+function gain(){st.floor++;st.combo++;st.best=Math.max(st.best,st.combo);draw();anim('hop');shakeView()}
+function climb(dir){
+  if(lock||phase!=='climb')return;
+  if(dir===need(st.floor)){gain();setup()}
+  else{
+    hit(); toast('❌ 방향이 틀렸어요! (남은 하트: '+Math.max(st.hearts,0)+'개)');
+    if(st.hearts<=0){lock=true;$('me').classList.add('fall');setTimeout(function(){finish('lost')},1100)}
+  }
+}
+function answerPick(i){
+  if(lock||phase!=='pick')return;
+  var o=cur.opts[i];
+  if(o.ok){st.right++;gain();setup();return}
+  lock=true; st.missed.push({t:cur.t,a:null,w:cur.w,ans:cur.o[cur.a]}); hit();
+  var right=cur.o[cur.a];
+  $('fbt').textContent=st.hearts<=0?'오답입니다! 마지막 목숨을 잃었어요':'오답입니다! 하트를 1개 잃었어요 (남은 하트: '+st.hearts+'개)';
+  $('fbq').textContent=cur.t; $('fbc').textContent=right; $('fbu').textContent=o.x; $('fbw').textContent=cur.w;
+  $('fbn').textContent=st.hearts<=0?'등반 결과 보기':'다음 문제 도전하기 '+(ch.indexOf('data:')===0?'🐾':ch);
+  $('ovfb').hidden=false; $('fbn').focus();
+}
+function answer(v){
+  if(lock||phase!=='quiz')return;
+  if(v===cur.a){st.right++;gain();setup();return}
+  lock=true; st.missed.push(cur); hit();
+  $('fbt').textContent=st.hearts<=0?'오답입니다! 마지막 목숨을 잃었어요':'오답입니다! 하트를 1개 잃었어요 (남은 하트: '+st.hearts+'개)';
+  $('fbq').textContent=cur.t; $('fbc').textContent=cur.a?'O (참)':'X (거짓)'; $('fbu').textContent=v?'O (참)':'X (거짓)';
+  $('fbw').textContent=cur.w;
+  $('fbn').textContent=st.hearts<=0?'등반 결과 보기':'다음 문제 도전하기 '+(ch.indexOf('data:')===0?'🐾':ch);
+  $('ovfb').hidden=false; $('fbn').focus();
+}
+$('fbn').onclick=function(){
+  $('ovfb').hidden=true;
+  if(st.hearts<=0){$('me').classList.add('fall');setTimeout(function(){finish('lost')},900);return}
+  setup();
+};
+function finish(r){
+  lock=true;
+  $('rf').textContent=st.floor+'F'; $('rc').textContent=st.right; $('rb').textContent=st.best;
+  $('re').textContent=r==='lost'?'💧':'🏁';
+  $('rd').textContent=r==='lost'?'목숨을 모두 잃고 미끄러졌어요. '+st.floor+'층까지 등반했어요.':st.floor+'층에서 등반을 마쳤어요.';
+  $('rev').innerHTML=st.missed.length?'<b>틀린 문제 복습</b><ul>'+st.missed.map(function(q){return '<li>'+q.t+' → <b>'+(q.a===null?q.ans:(q.a?'O':'X'))+'</b> ('+q.w+')</li>'}).join('')+'</ul>':'틀린 문제가 없어요! 👏';
+  $('ovres').hidden=false;
+}
+function toHome(){
+  F.run=false;document.body.classList.remove('flapmode');$('ovf').hidden=true;$('fgame').hidden=true;
+  $('ovres').hidden=true;$('ovfb').hidden=true;$('game').hidden=true;$('home').hidden=false;
+  document.body.classList.add('home');delete document.body.dataset.z;$('decor').innerHTML='';
+}
+function start(){
+  F.run=false;document.body.classList.remove('flapmode');
+  st={floor:1,hearts:3,combo:0,best:0,right:0,missed:[]};
+  lefts=[0];dirNow='right';run=3;gates={};lastGate=0;refill();
+  $('ovres').hidden=true;$('home').hidden=true;$('game').hidden=false;
+  document.body.classList.remove('home');delete document.body.dataset.z;
+  $('me').classList.remove('fall');
+  draw();setup();
+}
+$('start').onclick=function(){if(mode==='flap')startFlap();else start()}; $('rr').onclick=start; $('rh').onclick=toHome;
+$('homeb').onclick=function(){if(!lock||!$('ovres').hidden)toHome();else toHome()};
+document.addEventListener('keydown',function(e){
+  if($('game').hidden||e.repeat||lock)return;
+  if(phase==='pick'&&e.key>='1'&&e.key<='4'){answerPick(Number(e.key)-1);return}
+  var L=e.key==='ArrowLeft',R=e.key==='ArrowRight'; if(!L&&!R)return;
+  e.preventDefault();
+  if(phase==='climb')climb(L?'left':'right'); else if(phase==='quiz')answer(L);
+});
+
+/* ---------------- 기둥 날기 ---------------- */
+var mode='stairs';
+$('modes').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;mode=b.dataset.v;this.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed',x===b)})});
+var MEDALS=[
+  {min:60,n:'개삐까뻔쩍 전설 메달',ico:'👑',c:'m5'},
+  {min:45,n:'다이아 메달',ico:'💎',c:'m4'},
+  {min:30,n:'금메달',ico:'🥇',c:'m3'},
+  {min:20,n:'은메달',ico:'🥈',c:'m2'},
+  {min:10,n:'동메달',ico:'🥉',c:'m1'}
+];
+function medalFor(sc){for(var i=0;i<MEDALS.length;i++){if(sc>=MEDALS[i].min)return MEDALS[i]}return null}
+function medalHTML(m){
+  if(!m)return '<div class="medal none"><span>?</span></div>';
+  var extra=m.c==='m5'?'<i class="ring"></i><span class="sp a">✨</span><span class="sp b">✨</span><span class="sp c">⭐</span>':(m.c==='m4'?'<span class="sp a">✨</span><span class="sp b">✨</span>':'');
+  return '<div class="medal '+m.c+'">'+extra+'<span class="ico">'+m.ico+'</span></div>';
+}
+var F={run:false}, FW=360, FH=520, GROUND=40, BX=90, BR=15, PW=58, PGAP=150, GRAV=1500, JUMP=-430;
+var cvs=$('cv'), cx=cvs.getContext('2d'), imgCache={};
+function chImg(){
+  if(ch.indexOf('data:')!==0)return null;
+  if(!imgCache[ch]){var im=new Image();im.src=ch;imgCache[ch]=im}
+  return imgCache[ch];
+}
+function loadBest(){try{return Number(localStorage.getItem('chasi_flap_best'))||0}catch(e){return 0}}
+function saveBest(v){try{localStorage.setItem('chasi_flap_best',String(v))}catch(e){}}
+function startFlap(){
+  $('home').hidden=true;$('game').hidden=true;$('ovf').hidden=true;$('fgame').hidden=false;
+  document.body.classList.remove('home');document.body.classList.add('flapmode');document.body.dataset.z=0;decor(0);
+  F={run:true,state:'ready',y:FH/2,vy:0,pipes:[],timer:0,score:0,best:loadBest(),t0:0,last:performance.now(),rot:0};
+  $('fbest').textContent=F.best;$('fscore').textContent='0';$('fready').hidden=false;
+  chImg();
+  requestAnimationFrame(floop);
+}
+function flapJump(){
+  if(!F.run)return;
+  if(F.state==='ready'){F.state='play';$('fready').hidden=true;F.timer=0.6}
+  if(F.state==='play')F.vy=JUMP;
+}
+function fover(){
+  if(F.state==='dead')return;
+  F.state='dead';
+  if(F.score>F.best){F.best=F.score;saveBest(F.best)}
+  $('fbest').textContent=F.best;
+  setTimeout(function(){
+    if(!F.run)return;
+    $('fs1').textContent=F.score;$('fs2').textContent=F.best;
+    var m=medalFor(F.score),nx=null;
+    for(var i=MEDALS.length-1;i>=0;i--){if(MEDALS[i].min>F.score){nx=MEDALS[i];break}}
+    $('fmedal').innerHTML=medalHTML(m);
+    $('fmn').textContent=m?m.n+' 획득!':'메달을 얻지 못했어요';
+    $('fmh').textContent=nx?nx.min+'점이면 '+nx.n+'! (앞으로 '+(nx.min-F.score)+'점)':'모든 메달을 모았어요!';
+    $('ovf').hidden=false;
+  },650);
+}
+function fupdate(dt,now){
+  if(F.state==='ready'){F.y=FH/2+Math.sin(now/400)*4;F.rot=0;return}
+  var speed=140+Math.min(F.score*3,90);
+  if(F.state==='play'){
+    F.vy+=GRAV*dt;F.y+=F.vy*dt;
+    F.timer-=dt;
+    if(F.timer<=0){
+      var top=60+Math.random()*(FH-GROUND-PGAP-120);
+      F.pipes.push({x:FW+10,top:top,passed:false});
+      F.timer=(PW+150)/speed*1.0+0.38;
+    }
+    for(var i=0;i<F.pipes.length;i++){
+      var p=F.pipes[i];p.x-=speed*dt;
+      if(!p.passed&&p.x+PW<BX-BR){p.passed=true;F.score++;$('fscore').textContent=F.score;for(var k=0;k<MEDALS.length;k++){if(MEDALS[k].min===F.score){toast(MEDALS[k].ico+' '+MEDALS[k].n+' 달성!')}}}
+      if(BX+BR>p.x&&BX-BR<p.x+PW&&(F.y-BR<p.top||F.y+BR>p.top+PGAP)){fover()}
+    }
+    F.pipes=F.pipes.filter(function(p){return p.x>-PW-10});
+    if(F.y-BR<0){F.y=BR;if(F.vy<0)F.vy=0}
+    if(F.y+BR>FH-GROUND){F.y=FH-GROUND-BR;fover()}
+  }else if(F.state==='dead'){
+    F.vy+=GRAV*dt;F.y=Math.min(F.y+F.vy*dt,FH-GROUND-BR);
+  }
+  F.rot=Math.max(-0.12,Math.min(0.25,F.vy/2400));
+}
+var PG=cx.createLinearGradient(0,0,PW,0);PG.addColorStop(0,'#3a9a52');PG.addColorStop(.5,'#7fd48a');PG.addColorStop(1,'#2f8545');
+function pipeDraw(x,y,h,cap){
+  cx.save();cx.translate(x,0);
+  cx.fillStyle=PG;cx.fillRect(0,y,PW,h);
+  cx.fillStyle='#2a6f3b';cx.fillRect(-4,cap,PW+8,14);
+  cx.strokeStyle='rgba(0,0,0,.25)';cx.lineWidth=2;cx.strokeRect(0,y,PW,h);cx.strokeRect(-4,cap,PW+8,14);
+  cx.restore();
+}
+var sprite=null,spriteKey='';
+function getSprite(){
+  if(spriteKey===ch&&sprite)return sprite;
+  var im=chImg(),c=document.createElement('canvas'),g;
+  if(im){
+    if(!(im.complete&&im.naturalHeight))return null;
+    var h=58,w=Math.round(h*im.naturalWidth/im.naturalHeight);
+    c.width=w;c.height=h;g=c.getContext('2d');g.drawImage(im,0,0,w,h);
+  }else{
+    c.width=56;c.height=56;g=c.getContext('2d');g.font='46px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(ch,28,30);
+  }
+  sprite=c;spriteKey=ch;return c;
+}
+function frender(){
+  cx.clearRect(0,0,FW,FH);
+  F.pipes.forEach(function(p){
+    pipeDraw(p.x,0,p.top-14,p.top-14);
+    pipeDraw(p.x,p.top+PGAP+14,FH-GROUND-(p.top+PGAP+14),p.top+PGAP);
+  });
+  cx.fillStyle='#8a6a3a';cx.fillRect(0,FH-GROUND,FW,GROUND);
+  cx.fillStyle='#5fae4a';cx.fillRect(0,FH-GROUND,FW,10);
+  cx.save();cx.translate(BX,F.y);cx.rotate(F.rot);
+  var sp=getSprite();
+  if(sp)cx.drawImage(sp,-sp.width/2,-sp.height/2);
+  cx.restore();
+}
+function floop(now){
+  if(!F.run)return;
+  var dt=Math.min(0.033,(now-F.last)/1000);F.last=now;
+  fupdate(dt,now);frender();
+  requestAnimationFrame(floop);
+}
+$('cwrap').addEventListener('pointerdown',function(e){e.preventDefault();flapJump()});
+$('fhome').onclick=toHome; $('fh2').onclick=toHome; $('fr2').onclick=startFlap;
+document.addEventListener('keydown',function(e){
+  if($('fgame').hidden||!$('ovf').hidden)return;
+  if(e.code==='Space'||e.key==='ArrowUp'){e.preventDefault();if(!e.repeat)flapJump()}
+});
+document.body.classList.add('home');
+</script>
+
+</body></html>
